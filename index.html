@@ -1,79 +1,57 @@
 <!DOCTYPE html>
-<html lang="bn">
+<html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat Board</title>
-    <style>
-        /* বাটন ফোনের জন্য একদম হালকা ডিজাইন */
-        body { font-family: "Arial", sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
-        .top-bar { background: #075e54; color: white; padding: 5px; text-align: center; }
-        
-        .nav-buttons { padding: 5px; text-align: center; background: #ddd; }
-        .btn { 
-            background: #25d366; color: black; padding: 8px 10px; 
-            text-decoration: none; font-weight: bold; border: 1px solid #000; 
-            display: inline-block; font-size: 13px; margin: 2px;
-        }
-        .btn-refresh { background: #fff; }
-
-        .chat-area { background: #fff; margin-top: 5px; }
-        
-        /* মেসেজের গ্যাপ কমানো হয়েছে */
-        .msg-box { 
-            border-bottom: 1px solid #ccc; 
-            padding: 3px 5px; 
-            margin: 0; 
-            word-wrap: break-word; 
-        }
-        .name { color: #075e54; font-weight: bold; font-size: 12px; }
-        .text { color: #000; font-size: 14px; margin-left: 3px; }
-    </style>
+    <title>Chat</title>
 </head>
-<body>
+<body style="margin:0; padding:2px; background-color:#fff;">
 
-    <div class="top-bar">চ্যাট রুম</div>
-
-    <div class="nav-buttons">
-        <a href="https://docs.google.com/forms/d/e/1FAIpQLSc4j4-Zgynnz6ImFtr5y4wic1jpv-EtFmykCg3IHge9oVtaFQ/viewform" class="btn">✉ লিখতে ক্লিক করুন</a>
-        <a href="javascript:location.reload()" class="btn btn-refresh">🔄 রিফ্রেশ</a>
+    <div style="background:#075e54; color:white; padding:5px; text-align:center;">
+        <b>মেসেজ বোর্ড</b>
     </div>
 
-    <div id="chat-list" class="chat-area">
+    <div style="padding:5px; text-align:center; background:#eee;">
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSc4j4-Zgynnz6ImFtr5y4wic1jpv-EtFmykCg3IHge9oVtaFQ/viewform" style="background:#25d366; color:black; padding:5px; text-decoration:none; border:1px solid #000; font-size:12px;">✉ লিখুন</a>
+        &nbsp;
+        <a href="javascript:location.reload()" style="background:#fff; color:black; padding:5px; text-decoration:none; border:1px solid #000; font-size:12px;">🔄 রিফ্রেশ</a>
+    </div>
+
+    <div id="chat-list" style="margin-top:5px;">
         লোড হচ্ছে...
     </div>
 
     <script>
         var dbUrl = "https://telegram-c10ce-default-rtdb.firebaseio.com/chats/global.json";
 
-        function getChat() {
-            var req = new XMLHttpRequest();
-            req.open("GET", dbUrl, true);
-            req.onreadystatechange = function () {
-                if (req.readyState === 4 && req.status === 200) {
-                    var data = JSON.parse(req.responseText);
-                    var output = "";
+        function load() {
+            var x = new XMLHttpRequest();
+            x.open("GET", dbUrl, true);
+            x.onreadystatechange = function () {
+                if (x.readyState == 4 && x.status == 200) {
+                    var data = JSON.parse(x.responseText);
+                    var res = "";
                     if (!data) {
-                        document.getElementById('chat-list').innerHTML = "<p style='text-align:center'>মেসেজ নেই</p>";
+                        document.getElementById('chat-list').innerHTML = "মেসেজ নাই";
                         return;
                     }
                     var keys = Object.keys(data).reverse();
                     for (var i = 0; i < keys.length; i++) {
                         var k = keys[i];
-                        // নাম এবং মেসেজকে একই লাইনে রাখা হয়েছে
-                        output += "<div class='msg-box'>" +
-                                  "<span class='name'>" + data[k].sender + ":</span>" +
-                                  "<span class='text'>" + data[k].message + "</span>" +
-                                  "</div>";
+                        // টেবিল ব্যবহার করছি যাতে বাটন ফোনে ফাঁকা জায়গা একদম কম থাকে
+                        res += "<div style='border-bottom:1px solid #ddd; padding:2px;'>"+
+                               "<b style='color:#075e54; font-size:13px;'>" + data[k].sender + ":</b> "+
+                               "<span style='font-size:14px;'>" + data[k].message + "</span>"+
+                               "</div>";
                     }
-                    document.getElementById('chat-list').innerHTML = output;
+                    document.getElementById('chat-list').innerHTML = res;
                 }
             };
-            req.send();
+            x.send();
         }
-        getChat();
-        // বাটন ফোনের জন্য অটো-রিফ্রেশ ৫ সেকেন্ড বাড়িয়ে ১০ সেকেন্ড করা হলো
-        setInterval(getChat, 10000);
+        load();
+        setInterval(load, 15000); // জাভা ফোনের চাপের কথা ভেবে ১৫ সেকেন্ড দেওয়া হলো
     </script>
+
 </body>
 </html>
