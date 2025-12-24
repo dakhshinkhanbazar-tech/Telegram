@@ -1,60 +1,79 @@
 <!DOCTYPE html>
-<html>
+<html lang="bn">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chat</title>
+    <title>Chat Board</title>
     <style>
-        /* বাটন ফোনের জন্য বিশেষ ফন্ট ফ্যামিলি */
-        body { 
-            font-family: "Tahoma", "Arial Unicode MS", "Arial", sans-serif; 
-            background-color: #fff; padding: 2px; margin: 0; 
+        /* বাটন ফোনের জন্য একদম হালকা ডিজাইন */
+        body { font-family: "Arial", sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; }
+        .top-bar { background: #075e54; color: white; padding: 5px; text-align: center; }
+        
+        .nav-buttons { padding: 5px; text-align: center; background: #ddd; }
+        .btn { 
+            background: #25d366; color: black; padding: 8px 10px; 
+            text-decoration: none; font-weight: bold; border: 1px solid #000; 
+            display: inline-block; font-size: 13px; margin: 2px;
         }
-        .header { background: #075e54; color: white; padding: 5px; text-align: center; font-size: 14px; }
-        .btn-write { 
-            background: #25d366; color: white; padding: 8px; 
-            text-decoration: none; display: block; text-align: center; 
-            font-weight: bold; margin: 5px; border: 1px solid #000; font-size: 14px;
+        .btn-refresh { background: #fff; }
+
+        .chat-area { background: #fff; margin-top: 5px; }
+        
+        /* মেসেজের গ্যাপ কমানো হয়েছে */
+        .msg-box { 
+            border-bottom: 1px solid #ccc; 
+            padding: 3px 5px; 
+            margin: 0; 
+            word-wrap: break-word; 
         }
-        .msg-box { border-bottom: 1px solid #eee; padding: 5px; margin: 0; line-height: 1.4; }
-        .sender-name { color: #075e54; font-weight: bold; font-size: 13px; }
-        .msg-text { color: #000; font-size: 14px; }
+        .name { color: #075e54; font-weight: bold; font-size: 12px; }
+        .text { color: #000; font-size: 14px; margin-left: 3px; }
     </style>
 </head>
 <body>
-    <div class="header">চ্যাট বোর্ড</div>
-    <a href="https://docs.google.com/forms/d/e/1FAIpQLSc4j4-Zgynnz6ImFtr5y4wic1jpv-EtFmykCg3IHge9oVtaFQ/viewform" class="btn-write">মেসেজ লিখুন</a>
-    <div id="chat-list">লোড হচ্ছে...</div>
+
+    <div class="top-bar">চ্যাট রুম</div>
+
+    <div class="nav-buttons">
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSc4j4-Zgynnz6ImFtr5y4wic1jpv-EtFmykCg3IHge9oVtaFQ/viewform" class="btn">✉ লিখতে ক্লিক করুন</a>
+        <a href="javascript:location.reload()" class="btn btn-refresh">🔄 রিফ্রেশ</a>
+    </div>
+
+    <div id="chat-list" class="chat-area">
+        লোড হচ্ছে...
+    </div>
 
     <script>
         var dbUrl = "https://telegram-c10ce-default-rtdb.firebaseio.com/chats/global.json";
-        function loadMessages() {
-            var xhr = new XMLHttpRequest();
-            xhr.open("GET", dbUrl, true);
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    var data = JSON.parse(xhr.responseText);
-                    var html = "";
+
+        function getChat() {
+            var req = new XMLHttpRequest();
+            req.open("GET", dbUrl, true);
+            req.onreadystatechange = function () {
+                if (req.readyState === 4 && req.status === 200) {
+                    var data = JSON.parse(req.responseText);
+                    var output = "";
                     if (!data) {
-                        document.getElementById('chat-list').innerHTML = "Empty!";
+                        document.getElementById('chat-list').innerHTML = "<p style='text-align:center'>মেসেজ নেই</p>";
                         return;
                     }
                     var keys = Object.keys(data).reverse();
                     for (var i = 0; i < keys.length; i++) {
                         var k = keys[i];
-                        // বাংলা সাপোর্ট করার জন্য UTF-8 নিশ্চিত করা হয়েছে
-                        html += "<div class='msg-box'>" +
-                                "<span class='sender-name'>" + data[k].sender + ": </span>" +
-                                "<span class='msg-text'>" + data[k].message + "</span>" +
-                                "</div>";
+                        // নাম এবং মেসেজকে একই লাইনে রাখা হয়েছে
+                        output += "<div class='msg-box'>" +
+                                  "<span class='name'>" + data[k].sender + ":</span>" +
+                                  "<span class='text'>" + data[k].message + "</span>" +
+                                  "</div>";
                     }
-                    document.getElementById('chat-list').innerHTML = html;
+                    document.getElementById('chat-list').innerHTML = output;
                 }
             };
-            xhr.send();
+            req.send();
         }
-        loadMessages();
-        setInterval(loadMessages, 10000);
+        getChat();
+        // বাটন ফোনের জন্য অটো-রিফ্রেশ ৫ সেকেন্ড বাড়িয়ে ১০ সেকেন্ড করা হলো
+        setInterval(getChat, 10000);
     </script>
 </body>
 </html>
