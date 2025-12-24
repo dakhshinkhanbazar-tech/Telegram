@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Board</title>
+    <style>
+        body { font-family: monospace; background: #f0f0f0; padding: 5px; }
+        .header { background: #075e54; color: white; padding: 10px; text-align: center; }
+        .write-btn { background: #25d366; color: white; padding: 12px; text-decoration: none; display: block; text-align: center; font-weight: bold; border-radius: 5px; margin: 10px 0; border: 1px solid black; }
+        .msg-box { background: white; border-bottom: 1px solid #ccc; padding: 10px; margin-bottom: 5px; }
+        .name { color: #075e54; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="header">জরুরি মেসেজ বোর্ড</div>
+
+    <a href="আপনার_গুগল_ফর্মের_লিঙ্ক_এখানে_দিন" class="write-btn">✉ মেসেজ লিখুন</a>
+
+    <div id="chat-display">মেসেজ চেক করা হচ্ছে...</div>
+
+    <script>
+        // আপনার নতুন ডাটাবেস লিঙ্ক
+        const dbUrl = "https://telegram-c10ce-default-rtdb.firebaseio.com/chats/global.json";
+
+        function loadChat() {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", dbUrl, true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var data = JSON.parse(xhr.responseText);
+                    var html = "";
+                    if(!data) {
+                        document.getElementById('chat-display').innerHTML = "এখনো কোনো মেসেজ নেই।";
+                        return;
+                    }
+                    var keys = Object.keys(data).reverse();
+                    for (var i = 0; i < keys.length; i++) {
+                        var k = keys[i];
+                        html += "<div class='msg-box'><span class='name'>" + data[k].sender + ":</span><br>" + data[k].message + "</div>";
+                    }
+                    document.getElementById('chat-display').innerHTML = html;
+                }
+            };
+            xhr.send();
+        }
+
+        loadChat();
+        setInterval(loadChat, 10000); // ১০ সেকেন্ড পর পর রিফ্রেশ হবে
+    </script>
+</body>
+</html>
