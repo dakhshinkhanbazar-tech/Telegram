@@ -2,69 +2,64 @@
 <html>
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Emergency Chat Board</title>
+    <title>Chat Board</title>
     <style>
-        /* বাটন ফোনের ব্রাউজারের জন্য সহজ ডিজাইন */
-        body { font-family: "Courier New", monospace; background-color: #e5ddd5; padding: 5px; margin: 0; }
-        .header { background: #075e54; color: white; padding: 10px; text-align: center; font-weight: bold; border-bottom: 2px solid #000; }
-        
-        /* মেসেজ লেখার বড় বাটন */
+        /* ফন্ট ফ্যামিলি সরিয়ে দিয়েছি যাতে ফোনের নিজস্ব বাংলা লোড হয় */
+        body { background-color: #e5ddd5; padding: 2px; margin: 0; }
+        .header { background: #075e54; color: white; padding: 8px; text-align: center; font-weight: bold; }
         .btn-write { 
-            background: #25d366; color: white; padding: 15px; 
+            background: #25d366; color: black; padding: 10px; 
             text-decoration: none; display: block; text-align: center; 
-            font-weight: bold; border-radius: 5px; margin: 10px 0; 
-            border: 2px solid #075e54; font-size: 18px;
+            font-weight: bold; border: 1px solid #000; margin: 5px 0; 
         }
-
-        .chat-container { background: white; border: 1px solid #999; min-height: 250px; padding: 5px; }
-        
-        /* প্রতিটি মেসেজের ডিজাইন */
-        .msg-box { border-bottom: 1px solid #ddd; padding: 8px; margin-bottom: 5px; background: #fff; }
-        .sender-name { color: #075e54; font-weight: bold; font-size: 14px; display: block; }
-        .msg-text { color: #333; font-size: 16px; display: block; margin-top: 3px; }
-        
-        .footer { text-align: center; padding: 15px; }
-        .refresh-btn { padding: 10px; width: 100%; font-weight: bold; background: #ddd; border: 1px solid #000; }
+        .chat-container { background: white; border: 1px solid #999; min-height: 200px; }
+        .msg-box { border-bottom: 1px solid #ddd; padding: 5px; background: #fff; }
+        .sender-name { color: #075e54; font-weight: bold; font-size: 13px; }
+        .msg-text { color: #333; font-size: 15px; display: inline-block; }
     </style>
 </head>
 <body>
 
-    <div class="header">ফ্রি মেসেজ বোর্ড (Live)</div>
+    <div class="header">মেসেজ বোর্ড</div>
 
-    <a href="https://docs.google.com/forms/d/e/1FAIpQLSc4j4-Zgynnz6ImFtr5y4wic1jpv-EtFmykCg3IHge9oVtaFQ/viewform" class="btn-write">✉ মেসেজ লিখুন (Write)</a>
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSc4j4-Zgynnz6ImFtr5y4wic1jpv-EtFmykCg3IHge9oVtaFQ/viewform" class="btn-write">✉ মেসেজ লিখুন</a>
 
     <div class="chat-container" id="chat-list">
-        মেসেজ লোড হচ্ছে... (অনুগ্রহ করে অপেক্ষা করুন)
+        লোড হচ্ছে...
     </div>
 
-    <div class="footer">
-        <button onclick="location.reload()" class="refresh-btn">নতুন মেসেজ দেখতে রিফ্রেশ দিন</button>
+    <div style="text-align:center; padding:10px;">
+        <button onclick="location.reload()" style="width:100%; padding:10px;">🔄 রিফ্রেশ দিন</button>
     </div>
 
     <script>
-        // আপনার নতুন ফায়ারবেস ডাটাবেস লিঙ্ক
         var dbUrl = "https://telegram-c10ce-default-rtdb.firebaseio.com/chats/global.json";
 
         function loadMessages() {
             var xmlhttp = new XMLHttpRequest();
             xmlhttp.open("GET", dbUrl, true);
+            // জাভা ফোনের জন্য বিশেষ রিকোয়েস্ট হেডার
+            xmlhttp.setRequestHeader("Content-Type", "application/json; charset=utf-8");
+            
             xmlhttp.onreadystatechange = function () {
                 if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
+                    // সার্ভার থেকে আসা টেক্সটকে বাংলা হিসেবে ডিকোড করা
+                    var responseText = decodeURIComponent(escape(xmlhttp.responseText));
                     var data = JSON.parse(xmlhttp.responseText);
                     var htmlContent = "";
                     
                     if (!data) {
-                        document.getElementById('chat-list').innerHTML = "<center>এখনো কোনো মেসেজ নেই।</center>";
+                        document.getElementById('chat-list').innerHTML = "খালি";
                         return;
                     }
 
-                    // সব মেসেজ সিরিয়ালি সাজানো (নতুনগুলো সবার আগে)
                     var keys = Object.keys(data).reverse();
                     for (var i = 0; i < keys.length; i++) {
                         var k = keys[i];
                         htmlContent += "<div class='msg-box'>" +
-                                       "<span class='sender-name'>" + data[k].sender + ":</span>" +
+                                       "<span class='sender-name'>" + data[k].sender + ": </span>" +
                                        "<span class='msg-text'>" + data[k].message + "</span>" +
                                        "</div>";
                     }
@@ -73,13 +68,7 @@
             };
             xmlhttp.send();
         }
-
-        // পেজ লোড হলে মেসেজগুলো দেখাবে
         loadMessages();
-        
-        // প্রতি ১০ সেকেন্ড পর পর অটো চেক করবে
-        setInterval(loadMessages, 10000);
     </script>
-
 </body>
 </html>
