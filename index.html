@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat</title>
+    <style>
+        /* ফন্ট সাইজ এবং মার্জিন কমিয়ে লেখাগুলো কাছাকাছি আনা হয়েছে */
+        body { font-family: sans-serif; background-color: #fff; padding: 2px; margin: 0; }
+        .header { background: #075e54; color: white; padding: 5px; text-align: center; font-size: 14px; }
+        
+        .btn-write { 
+            background: #25d366; color: white; padding: 8px; 
+            text-decoration: none; display: block; text-align: center; 
+            font-weight: bold; border-radius: 3px; margin: 5px; 
+            border: 1px solid #075e54; font-size: 14px;
+        }
+
+        .chat-container { background: #f9f9f9; border-top: 1px solid #ddd; padding: 2px; }
+        
+        /* মেসেজগুলোর মাঝের ফাঁকা জায়গা কমানো হয়েছে */
+        .msg-box { 
+            border-bottom: 1px solid #eee; 
+            padding: 4px 6px; 
+            margin: 0; 
+            line-height: 1.2;
+        }
+        .sender-name { color: #075e54; font-weight: bold; font-size: 13px; }
+        .msg-text { color: #000; font-size: 14px; margin-left: 5px; }
+        
+        .footer { text-align: center; padding: 10px; }
+        .refresh-btn { padding: 5px; width: 80%; font-size: 12px; }
+    </style>
+</head>
+<body>
+
+    <div class="header">চ্যাট বোর্ড</div>
+
+    <a href="https://docs.google.com/forms/d/e/1FAIpQLSc4j4-Zgynnz6ImFtr5y4wic1jpv-EtFmykCg3IHge9oVtaFQ/viewform" class="btn-write">✉ মেসেজ লিখুন</a>
+
+    <div class="chat-container" id="chat-list">
+        লোড হচ্ছে...
+    </div>
+
+    <div class="footer">
+        <button onclick="location.reload()" class="refresh-btn">রিফ্রেশ (Refresh)</button>
+    </div>
+
+    <script>
+        var dbUrl = "https://telegram-c10ce-default-rtdb.firebaseio.com/chats/global.json";
+
+        function loadMessages() {
+            var xmlhttp = new XMLHttpRequest();
+            xmlhttp.open("GET", dbUrl, true);
+            xmlhttp.onreadystatechange = function () {
+                if (xmlhttp.readyState === 4 && xmlhttp.status === 200) {
+                    var data = JSON.parse(xmlhttp.responseText);
+                    var htmlContent = "";
+                    if (!data) {
+                        document.getElementById('chat-list').innerHTML = "কোনো মেসেজ নেই।";
+                        return;
+                    }
+                    var keys = Object.keys(data).reverse();
+                    for (var i = 0; i < keys.length; i++) {
+                        var k = keys[i];
+                        // নাম এবং মেসেজকে একই লাইনে আনা হয়েছে ফাঁকা কমাতে
+                        htmlContent += "<div class='msg-box'>" +
+                                       "<span class='sender-name'>" + data[k].sender + ":</span>" +
+                                       "<span class='msg-text'>" + data[k].message + "</span>" +
+                                       "</div>";
+                    }
+                    document.getElementById('chat-list').innerHTML = htmlContent;
+                }
+            };
+            xmlhttp.send();
+        }
+        loadMessages();
+        setInterval(loadMessages, 10000);
+    </script>
+</body>
+</html>
